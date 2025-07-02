@@ -1,0 +1,30 @@
+- name: Stop the service 
+  service: 
+    name: "{{ component }}"
+    state: stopped 
+
+- name: Remove old code from /app directory 
+  file: 
+    path: /app
+    state: absent 
+
+- name: Create /app directory again to download new code 
+  file: 
+    path: /app
+    state: directory
+
+- name: download latest version code to /app directory
+  unarchive: 
+    src : "https://roboshop-artifacts.s3.amazonaws.com/{{ component }}-v{{ version_number }}.zip"
+    dest: /app 
+    remote_src: yes 
+  
+- name: Install dependencies
+  community.general.npm: 
+   path: /app
+
+- name: Restart {{ component }}
+  service: 
+    name: "{{ component }}"
+    state: restarted
+    enabled: yes 

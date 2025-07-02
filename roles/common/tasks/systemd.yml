@@ -1,0 +1,14 @@
+- name: copy "{{ component }}" service to system directory
+  template:
+    src: "{{ component }}.service.j2"
+    dest: "/etc/systemd/system/{{ component }}.service"
+
+- name: systemctl daemon reload
+  systemd_service:
+    daemon_reload: true
+
+- name: Start and enable {{ component }}
+  service: 
+    name: "{{ component }}"
+    state: restarted #even app is not running we can restart 
+    enabled: yes 

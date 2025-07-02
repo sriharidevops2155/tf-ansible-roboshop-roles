@@ -1,0 +1,49 @@
+- name: app Setup
+  include_role: 
+    name: common
+    tasks_from: app-setup
+
+- name: install nodes js and run
+  include_role: 
+    name: common
+    tasks_from: nodejs
+
+- name: copy mongodb repo
+  copy:
+    src: mongodb.repo
+    dest: /etc/yum.repos.d/mongo.repo
+
+- name: install mongodb server
+  dnf: 
+    name: mongodb-mongosh
+    state: present
+
+- name: check products loaded or not
+  command: mongosh --host mongodb.daws84s.cloud --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+  register: catalogue_output
+#  ignore_unreachable: true
+#  ignore_errors: true   
+
+- name: print catalogue output
+  debug:
+    msg: "{{ catalogue_output }}"
+  # ignore_errors: true  
+
+
+- name: load products
+  ansible.builtin.shell: mongosh --host mongodb.daws84s.cloud < /app/db/master-data.js
+  when: catalogue_output.stdout | int < 0
+  # ignore_unreachable: true
+  # ignore_errors: true 
+
+- name: Systemd Setup 
+  include_role: 
+    name: common
+    tasks_from: systemd
+
+# - name: Deployment for catalogue
+#   tags: 
+#     - deployment
+#   import_role: 
+#     name: common
+#     tasks_from: deployment

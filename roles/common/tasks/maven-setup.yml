@@ -1,0 +1,25 @@
+- name: install maven and mysql
+  dnf:
+    name: "{{ item }}"
+    state: installed 
+  loop:
+    - maven
+    - mysql
+
+- name: Install PyMySQL and cryptography
+  pip:
+    name: "{{ item }}"
+    executable: pip3.9
+  loop: 
+    - cryptography
+    - PyMySQL
+
+- name: install maven dependencies
+  command: mvn clean package
+  args:
+    chdir: /app 
+
+- name: rename jar file 
+  command: "mv target/{{ component }}-1.0.jar {{ component }}.jar"
+  args:
+    chdir: /app 
